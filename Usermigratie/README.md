@@ -1,2 +1,0 @@
-# Usermigratie
-UserMigratie powershell scripts
