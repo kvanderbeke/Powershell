@@ -3,6 +3,7 @@
 Dit script gaat een user van de oude naming convention geautomatiseerd overzetten naar de nieuwe naming convention.
 Test
 Nog een test
+opnieuw testen
 .DESCRIPTION
 Dit script gaat op basis van een CSV file gevuld met oude gebruikersnamen nieuwe namen aanmaken. Het script gaat hiervoor een nieuwe user aanmaken met dezelfde attributen als de
 huidige gebruiker, een nieuw login- en printscript aanmaken, de mailbox loskoppelen en aan de nieuwe gebruiker hangen, de oude gebruiker archiveren, de nieuwe gebruiker toevoegen aan
