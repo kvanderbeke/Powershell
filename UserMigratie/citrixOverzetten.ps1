@@ -29,7 +29,7 @@ else
 function memberOf($gebruikersnaam,$oldGroup,$newGroup){
     $server = "domctrl01"
     $gebruikersnaam = $gebruikersnaam.toUpper()
-    $member = (Get-ADGroupMember -Identity $oldGroup -Server $server) | select -ExpandProperty samAccountName
+    $member = (Get-ADGroupMember -Identity $oldGroup -Server $server) | Select-Object -ExpandProperty samAccountName
     if ($member.Contains($gebruikersnaam))
     {
         LogWrite "$gebruikersnaam is lid van $oldGroup"
@@ -72,7 +72,7 @@ if (Get-ADUser $username){
         memberof $username 'CTX_PRD_APP_PROTIME' 'CTX_PRD_XA7X_APP_PROTIME'
         memberof $username 'CTX_PRD_APP_VIVALDI_2FLOW' 'CTX_PRD_XA7X_APP_VIVALDI_2FLOW'
         memberof $username 'CTX_PRD_BR_SET_DEFAULT_PRINTER' 'CTX_PRD_XA7X_SET_DEFAULT_PRINTER'
-        memberof $username 'CTX_PRD_SET_ALLOW_CLIENT_DRIVES_ALL' 'CTX_PRD_XA7X_SET_ALLOW_CLIENT_DRIVES_ALL' 
+        memberof $username 'CTX_PRD_SET_ALLOW_CLIENT_DRIVES_ALL' 'CTX_PRD_XA7X_SET_ALLOW_CLIENT_DRIVES_ALL'
     }
 else{
     Logwrite "username niet gevonden"
@@ -83,18 +83,18 @@ else{
 try{
 
     $user = Get-ADUser $username -Properties *
-    
+
     try{
     $string = Select-String -Path "\\waak.local\SYSVOL\waak.local\scripts\$($user.scriptPath)" -Pattern "addprinter"  | Select-Object Line
     $string = $string.Line
 
     $string = $string.ToString()
     $printscript = $string.Substring(8)
-        
+
         try{
             (Get-Content $printscript).ToLower() | ForEach-Object {
                 $_.replace('printprdvs01', 'printprdvs03') }| Set-Content "\\fileserver\loginscript\printers\$($username)_addprinter.vbs"
-        
+
             LogWrite "Printscript gekopieerd"
             }
             catch{
@@ -105,7 +105,7 @@ try{
     catch{
          LogWrite "Probleem bij het ophalen van het printscript"
          LogWrite $Error[0].Exception.Message
-    }      
+    }
 }
 catch{
     LogWrite "Probleem bij het aanpassen van het printscript"
