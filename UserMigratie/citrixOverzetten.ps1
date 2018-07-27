@@ -90,7 +90,6 @@ try{
 
     $string = $string.ToString()
     $printscript = $string.Substring(8)
-
         try{
             (Get-Content $printscript).ToLower() | ForEach-Object {
                 $_.replace('printprdvs01', 'printprdvs03') }| Set-Content "\\fileserver\loginscript\printers\$($username)_addprinter.vbs"
