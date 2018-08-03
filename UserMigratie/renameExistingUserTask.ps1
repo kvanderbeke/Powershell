@@ -284,7 +284,7 @@ foreach ($oldUser in $UserList)
     }
 
     #kopieren van groepen naar de nieuwe gebruiker
-    Get-ADPrincipalGroupMembership -Identity $user -Server $server | % {Add-ADPrincipalGroupMembership -Identity $Username -MemberOf $_ -Server $server}
+    Get-ADPrincipalGroupMembership -Identity $user -Server $server | ForEach-Object {Add-ADPrincipalGroupMembership -Identity $Username -MemberOf $_ -Server $server}
     LogWrite "Groepen van gebruiker gekopieerd"
     Add-ADGroupMember 'G_Homes' $username -Confirm:$False -Server $server
 
@@ -314,7 +314,7 @@ $mailboxRechten = Get-Mailbox -RecipientTypeDetails UserMailbox,SharedMailbox -R
     try{
         $devices = Get-ActiveSyncDevice -Mailbox $user.name
         foreach($device in $devices){
-            if($device.FriendlyName -ne $null){
+            if($null -ne $device.FriendlyName){
                 $to = "aanvraag_bpm_ict@waak.be"
                 $Subject = "Smartphone van gebruiker $($user.displayname) moet overgezet worden naar nieuw mailadres"
                 $mail = "
@@ -379,14 +379,14 @@ Hiervoor moet het nummer van de Fax $($address)) nog aangepast worden.</p>
         #disable oude mailbox gebruiker
         Disable-Mailbox $user.SamAccountName -Confirm:$false
         Start-Sleep 10
-        Get-MailboxStatistics -Database $db | ForEach {Update-StoreMailboxState -Database $db -Identity $_.MailboxGuid -Confirm:$False}
+        Get-MailboxStatistics -Database $db | ForEach-Object {Update-StoreMailboxState -Database $db -Identity $_.MailboxGuid -Confirm:$False}
         #Get-MailboxDatabase | Clean-MailboxDatabase
         LogWrite "Oude mailbox disabled"
 
         #mailbox verbinden met nieuwe gebruiker
         Connect-Mailbox -Identity $user.name -User $Username -Database $DB -Alias $Username
         #Get-MailboxDatabase | Clean-MailboxDatabase
-        Get-MailboxStatistics -Database $db | ForEach {Update-StoreMailboxState -Database $db -Identity $_.MailboxGuid -Confirm:$False}
+        Get-MailboxStatistics -Database $db | ForEach-Object {Update-StoreMailboxState -Database $db -Identity $_.MailboxGuid -Confirm:$False}
         Start-Sleep 10
         Set-Mailbox -Identity $Username -EmailAddressPolicyEnabled $false
         LogWrite "Nieuwe mailbox enabled"
