@@ -112,7 +112,7 @@ catch{
 $server = 'DOMCTRL01'
 $From = "servicedesk.ICT@waak.be"
 $SMTPServer = "exchange.waak.local"
-$SMTPPort = "25"
+#$SMTPPort = "25"
 $encoding = [System.Text.Encoding]::UTF8
 
 #Kiezen van locatie voor CSV bestand
@@ -150,7 +150,7 @@ foreach ($oldUser in $UserList)
 
         $completedFirstName = $false
         $completedLastName = $false
-        $retrycount = 0
+        #$retrycount = 0
     }
     catch{
         LogWrite "Fout bij het ophalen van de oude gebruiker"
@@ -236,7 +236,7 @@ foreach ($oldUser in $UserList)
         $loginscript = Get-Childitem –Path "\\waak.local\SYSVOL\waak.local\scripts\$($user.scriptPath)" -File -Recurse -ErrorAction SilentlyContinue
         $pos = $loginscript.Name.IndexOf("_")
         $leftPart = $loginscript.Name.Substring(0, $pos)
-        $rightPart = $loginscript.Name.Substring($pos+1)
+        #$rightPart = $loginscript.Name.Substring($pos+1)
         $scriptPath = $($leftPart+ "_" + $username +".bat")
 
         $string = Select-String -Path "\\waak.local\SYSVOL\waak.local\scripts\$($user.scriptPath)" -Pattern "addprinter"  | Select-Object Line
@@ -303,7 +303,7 @@ $mailboxRechten = Get-Mailbox -RecipientTypeDetails UserMailbox,SharedMailbox -R
     #ophalen mailboxdatabase van oude gebruiker - nieuwe gebruiker komt op dezelfde DB
     try{
         #Get-MailboxDatabase | Clean-MailboxDatabase
-        $DB = (Get-mailbox -identity "$($user.samAccountName)" | Select database).Database
+        $DB = (Get-mailbox -identity "$($user.samAccountName)" | Select-Object database).Database
     }
     catch{
         LogWrite "Er was een probleem bij ophalen van de mailboxdatabase van de gebruiker"
