@@ -15,8 +15,8 @@ Dit script moet uitgevoerd worden vanaf een gebruiker met de nodige rechten voor
 dienen voldoende rechten te hebben op de Exchange omgeving. Dit script staat lokaal op de server die de scheduled task loopt. (domctrl01)
 
 
-File Name  : renameExistingUserTask.ps1  
-Author     : Kristof Vanderbeke  
+File Name  : renameExistingUserTask.ps1
+Author     : Kristof Vanderbeke
 Company    : Orbid NV
 
 
@@ -61,7 +61,7 @@ function Remove-StringLatinCharacters
 function memberOf($gebruikersnaam,$oldGroup,$newGroup){
     $server = "domctrl01"
     $gebruikersnaam = $gebruikersnaam.toUpper()
-    $member = (Get-ADGroupMember -Identity $oldGroup -Server $server) | select -ExpandProperty samAccountName
+    $member = (Get-ADGroupMember -Identity $oldGroup -Server $server) | Select-Object -ExpandProperty samAccountName
     if ($member.Contains($gebruikersnaam))
     {
         LogWrite "$gebruikersnaam is lid van $oldGroup"
@@ -78,7 +78,7 @@ function memberOf($gebruikersnaam,$oldGroup,$newGroup){
 function lidVan($gebruikersnaam,$groep){
     $server = "domctrl01"
     $gebruikersnaam = $gebruikersnaam.toUpper()
-    $member = (Get-ADGroupMember -Identity $groep -Server $server) | select -ExpandProperty samAccountName
+    $member = (Get-ADGroupMember -Identity $groep -Server $server) | Select-Object -ExpandProperty samAccountName
     if ($member.Contains($gebruikersnaam))
     {
         Write-Host "$gebruikersnaam is lid van $groep"
@@ -95,7 +95,7 @@ function lidVan($gebruikersnaam,$groep){
 
 #region Exchange connectie leggen
 try{
-    $pass = cat C:\securestring.txt | convertto-securestring
+    $pass = Get-Content C:\securestring.txt | convertto-securestring
     $UserCredential = new-object -typename System.Management.Automation.PSCredential -argumentlist “waak\admin_orbid”,$pass
     #$UserCredential = $Host.ui.PromptForCredential("Gegevens nodig voor Exchange connectie", "Gelieve een Exchange admin op te geven.", "", "NetBiosUserName")
     #$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://exchvs01.waak.local/PowerShell/ -Authentication Kerberos
@@ -122,7 +122,7 @@ $encoding = [System.Text.Encoding]::UTF8
 Function Get-FileName($initialDirectory)
 {
     [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
-    
+
     $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
     $OpenFileDialog.initialDirectory = $initialDirectory
     $OpenFileDialog.filter = "CSV (*.csv)| *.csv"
@@ -144,7 +144,7 @@ foreach ($oldUser in $UserList)
     try{
         #ophalen oude gebruiker om voor en achternaam te weten
         $user = Get-ADUser $oldUser.users -Properties * -Server $server
-    
+
         $firstName = Remove-StringLatinCharacters -String $user.GivenName
         $lastName = Remove-StringLatinCharacters -String $user.sn
 
@@ -154,7 +154,7 @@ foreach ($oldUser in $UserList)
     }
     catch{
         LogWrite "Fout bij het ophalen van de oude gebruiker"
-        Throw "Fout bij het ophalen van de oude gebruiker"
+        Throw "Fout bij het ophalenfile van de oude gebruiker"
     }
     try{
 
@@ -162,7 +162,7 @@ foreach ($oldUser in $UserList)
         while (-not $completedFirstName){
             try {
                 $firstName = $firstName -replace '\s',''
-                $firstname = $firstName.subString(0, 4) 
+                $firstname = $firstName.subString(0, 4)
                 $completedFirstName = $true
             }
             catch [ArgumentOutOfRangeException] {
@@ -175,7 +175,7 @@ foreach ($oldUser in $UserList)
         while (-not $completedLastName){
             try {
                 $lastname = $lastname -replace '\s',''
-                $lastname = $lastName.subString(0, 4) 
+                $lastname = $lastName.subString(0, 4)
                 $completedLastName = $true
             }
             catch [ArgumentOutOfRangeException] {
@@ -198,9 +198,9 @@ foreach ($oldUser in $UserList)
         LogWrite "Fout bij het aanmaken van de gebruikersnaam"
         Throw "Fout bij het aanmaken van de gebruikersnaam"
     }
-    
 
-#region Username Checken 
+
+#region Username Checken
 #controleren of gebruikersnaam reeds bestaat
 #als deze reeds bestaat laatste letter verwijderen en vervangen door 1-9
 
@@ -208,19 +208,19 @@ foreach ($oldUser in $UserList)
         if (Get-ADUser -Filter "SamAccountName -eq '$Username'" -Server $server){
             LogWrite "Gebruikersnaam $username is reeds in gebruik"
 
-            $i = 1 
-            while ($i -lt 9) { 
-                $i +=1 
-                if (Get-ADUser -Filter "SamAccountName -eq '$($Username.subString(0,7) +$i)'" -Server $server){ 
-                    LogWrite "Gebruikersnaam $($Username.subString(0,7) +$i) is reeds in gebruik." 
-                } 
-                else {break} 
-            } 
+            $i = 1
+            while ($i -lt 9) {
+                $i +=1
+                if (Get-ADUser -Filter "SamAccountName -eq '$($Username.subString(0,7) +$i)'" -Server $server){
+                    LogWrite "Gebruikersnaam $($Username.subString(0,7) +$i) is reeds in gebruik."
+                }
+                else {break}
+            }
             LogWrite "Gebruikersnaam $($Username.subString(0,7) +$i) is beschikbaar"
             $Username =  $($Username.subString(0,7) +$i)
         }
         else{
-            LogWrite "$Username is beschikbaar." 
+            LogWrite "$Username is beschikbaar."
         }
     }
     catch{
@@ -287,7 +287,7 @@ foreach ($oldUser in $UserList)
     Get-ADPrincipalGroupMembership -Identity $user -Server $server | % {Add-ADPrincipalGroupMembership -Identity $Username -MemberOf $_ -Server $server}
     LogWrite "Groepen van gebruiker gekopieerd"
     Add-ADGroupMember 'G_Homes' $username -Confirm:$False -Server $server
-    
+
 #endregion
 
 #region accessrechten overzetten naar nieuwe gebruiker
@@ -322,9 +322,9 @@ $mailboxRechten = Get-Mailbox -RecipientTypeDetails UserMailbox,SharedMailbox -R
 <p>Dag ICT</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Hiervoor moet zijn smartphone(s) $($device.FriendlyName) opnieuw ingesteld worden.</p> 
+Hiervoor moet zijn smartphone(s) $($device.FriendlyName) opnieuw ingesteld worden.</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -355,9 +355,9 @@ Hiervoor moet zijn smartphone(s) $($device.FriendlyName) opnieuw ingesteld worde
 <p>Beste</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Hiervoor moet het nummer van de Fax $($address)) nog aangepast worden.</p> 
+Hiervoor moet het nummer van de Fax $($address)) nog aangepast worden.</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -374,10 +374,10 @@ Hiervoor moet het nummer van de Fax $($address)) nog aangepast worden.</p>
         LogWrite "Probleem bij het ophalen van de proxyadressen van de oude gebruiker"
     }
 #endregion
-    
+
     try{
         #disable oude mailbox gebruiker
-        Disable-Mailbox $user.SamAccountName -Confirm:$false 
+        Disable-Mailbox $user.SamAccountName -Confirm:$false
         Start-Sleep 10
         Get-MailboxStatistics -Database $db | ForEach {Update-StoreMailboxState -Database $db -Identity $_.MailboxGuid -Confirm:$False}
         #Get-MailboxDatabase | Clean-MailboxDatabase
@@ -416,7 +416,7 @@ Hiervoor moet het nummer van de Fax $($address)) nog aangepast worden.</p>
 #region Protime
     $to = "jan.lewylle@waak.be"
     $cc = "BPM@waak.be"
-   
+
     $toEric = "eric.bonne@waak.be"
     $Subject = "Nieuwe gebruiker $($username) aangemaakt"
     $mail = "
@@ -424,9 +424,9 @@ Hiervoor moet het nummer van de Fax $($address)) nog aangepast worden.</p>
 <p>Dag Jan</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Is het mogelijk om hiervoor in Protime het nodige te doen?</p> 
+Is het mogelijk om hiervoor in Protime het nodige te doen?</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -440,9 +440,9 @@ Is het mogelijk om hiervoor in Protime het nodige te doen?</p>
 <p>Dag Eric</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Is het mogelijk om hiervoor in Vivaldi het nodige te doen?</p> 
+Is het mogelijk om hiervoor in Vivaldi het nodige te doen?</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -456,9 +456,9 @@ Is het mogelijk om hiervoor in Vivaldi het nodige te doen?</p>
 <p>Dag Eric</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Is het mogelijk om hiervoor in IRIS het nodige te doen?</p> 
+Is het mogelijk om hiervoor in IRIS het nodige te doen?</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -474,9 +474,9 @@ if (lidVan $user.SamAccountName "G_EINVOICE"){
 <p>Dag Eric</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Is het mogelijk om hiervoor in Einvoice het nodige te doen?</p> 
+Is het mogelijk om hiervoor in Einvoice het nodige te doen?</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -497,9 +497,9 @@ if (lidVan $user.SamAccountName "G_CRM"){
 <p>Dag Eric</p>
 
 <p>Zonet werd gebruiker $($username) aangemaakt voor $($user.givenName) $($user.sn) ter vervanging van de oude account $($user.samAccountName).<br>
-Is het mogelijk om hiervoor in CRM het nodige te doen?</p> 
+Is het mogelijk om hiervoor in CRM het nodige te doen?</p>
 
-<p>Alvast bedankt!</p> 
+<p>Alvast bedankt!</p>
 
 <p>Helpdesk ICT</p>
 </span>
@@ -510,9 +510,9 @@ Is het mogelijk om hiervoor in CRM het nodige te doen?</p>
     else{
     LogWrite "Gebruiker zat niet in de  CRM groep"
     }
-#endregion      
+#endregion
 
-    
+
 #endregion
 
 #citrix groepen in orde brengen
@@ -562,7 +562,7 @@ try{
 
     try{
         if (Test-Path $path){
-            $acl = Get-Acl -Path $path 
+            $acl = Get-Acl -Path $path
             $rights = $acl | Select-Object -ExpandProperty Access | Where-Object identityreference -eq "WAAK\$($user.SamAccountName)"
             $newAcl = New-Object System.Security.AccessControl.FileSystemAccessRule("WAAK\$($userName)",$rights.FileSystemRights.ToString(),$rights.InheritanceFlags.ToString(),$rights.PropagationFlags.ToString(),$rights.AccessControlType.ToString())
             $acl.SetAccessRule($newAcl)
